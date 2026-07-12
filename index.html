@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Etsy / Shopify Product Image Resizer & Aspect Ratio Fixer</title>
+  <meta name="description" content="Free, instant, browser‑only tool to resize and crop product images for Etsy, Shopify, Amazon. Fix aspect ratios, meet marketplace requirements, no upload needed.">
+  <meta name="keywords" content="etsy image size, shopify photo dimensions, amazon product image requirements, csv to shopify listing, json to csv converter, etsy sellers, shopify sellers, amazon sellers, csv/json tools, developer tools">
+  <meta name="author" content="Product Image Tool">
+  <meta name="robots" content="index, follow">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Product Image Resizer & Aspect Ratio Fixer">
+  <meta property="og:description" content="Resize and crop product images for Etsy, Shopify, Amazon. Instant, private, no backend.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://example.com/product-image-tool">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f8fafc;
+      color: #0b1a2e;
+      padding: 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      padding: 1.5rem 1.8rem 2.5rem;
+      margin: 1rem 0;
+    }
+    h1 {
+      font-size: 1.9rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.3rem 0.6rem;
+      margin-bottom: 0.25rem;
+    }
+    h1 small {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: #3b6e9c;
+      background: #e7f0f9;
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+    }
+    .subhead {
+      color: #2c3e50;
+      margin-bottom: 1.8rem;
+      border-left: 4px solid #2b7a62;
+      padding-left: 1rem;
+      font-size: 1rem;
+      background: #f0f7f4;
+      border-radius: 0 12px 12px 0;
+      line-height: 1.4;
+    }
+    .tool-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    @media (min-width: 640px) {
+      .tool-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 1.8rem;
+      }
+    }
+    .upload-area {
+      background: #f2f6fc;
+      border-radius: 24px;
+      padding: 1.5rem 1.2rem;
+      border: 2px dashed #b9d0e7;
+      transition: background 0.2s;
+    }
+    .upload-area.drag-over {
+      background: #e3eef9;
+      border-color: #2b7a62;
+    }
+    .upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+    .upload-label span {
+      background: #1f3a4b;
+      color: white;
+      padding: 0.6rem 1.6rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+    }
+    .upload-label small {
+      color: #2c3e50;
+    }
+    #imageInput {
+      display: none;
+    }
+    .preview-box {
+      margin-top: 1rem;
+      background: white;
+      border-radius: 20px;
+      padding: 0.8rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-box img {
+      max-width: 100%;
+      max-height: 220px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #f1f5f9;
+    }
+    .dimension-badge {
+      font-size: 0.85rem;
+      background: #e9edf2;
+      padding: 0.2rem 1rem;
+      border-radius: 30px;
+      margin-top: 0.4rem;
+    }
+    .controls {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 1.2rem 1rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.02);
+      border: 1px solid #e2eaf1;
+    }
+    .control-group {
+      margin-bottom: 1.2rem;
+    }
+    .control-group label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+      color: #1a2b3c;
+    }
+    .select-preset {
+      width: 100%;
+      padding: 0.5rem 0.8rem;
+      border-radius: 40px;
+      border: 1px solid #cbd8e6;
+      background: white;
+      font-size: 0.95rem;
+    }
+    .dimension-inputs {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .dimension-inputs input {
+      width: 80px;
+      padding: 0.5rem;
+      border: 1px solid #cbd8e6;
+      border-radius: 30px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .dimension-inputs span {
+      color: #3f5a72;
+    }
+    .radio-group {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      margin: 0.5rem 0 0.2rem;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin: 1.2rem 0 0.5rem;
+    }
+    .btn {
+      background: #1f3a4b;
+      border: none;
+      color: white;
+      padding: 0.6rem 1.5rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      border: 1px solid transparent;
+      flex: 1 0 auto;
+    }
+    .btn-primary {
+      background: #2b7a62;
+    }
+    .btn-primary:hover {
+      background: #1f604c;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #2b7a62;
+      color: #1f3a4b;
+    }
+    .btn-outline:hover {
+      background: #e5f0eb;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .result-area {
+      margin-top: 1.5rem;
+      padding: 1rem 0.2rem;
+      border-top: 1px solid #dce5ef;
+    }
+    .result-area img {
+      max-width: 100%;
+      max-height: 240px;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      background: #f1f5f9;
+    }
+    .download-btn {
+      margin-top: 0.8rem;
+    }
+    .affiliate-section {
+      margin: 2rem 0 0.5rem;
+      background: #fafcfd;
+      border-radius: 20px;
+      padding: 1rem 1.2rem;
+      border: 1px solid #e3ecf3;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .affiliate-section p {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #1f3a4b;
+    }
+    .affiliate-links a {
+      display: inline-block;
+      background: #eef4fa;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      text-decoration: none;
+      color: #1f3a4b;
+      margin: 0.2rem 0.2rem;
+      font-size: 0.85rem;
+      border: 1px solid #d1dfed;
+    }
+    .affiliate-links a:hover {
+      background: #dce8f3;
+    }
+    .ad-placeholder {
+      background: #f4f7fb;
+      border-radius: 20px;
+      padding: 0.8rem 1.2rem;
+      margin: 1.8rem 0 0.5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #3f5a72;
+      border: 1px dashed #b9cfe3;
+    }
+    .privacy-note {
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      color: #4b627c;
+      background: #f0f4fa;
+      padding: 0.6rem 1rem;
+      border-radius: 40px;
+      text-align: center;
+    }
+    .footer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #e2eaf1;
+      margin: 1rem 0;
+    }
+    .inline-message {
+      font-size: 0.85rem;
+      color: #2c6b4f;
+      background: #e5f3ed;
+      padding: 0.2rem 1rem;
+      border-radius: 30px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📸 Image Resizer & Aspect Ratio Fixer <small>Etsy · Shopify · Amazon</small></h1>
+    <div class="subhead">
+      ⚡ Drop a product photo & instantly resize to marketplace specs. No upload, all in your browser.
+    </div>
+  </header>
+
+  <main class="tool-grid">
+    <!-- left: upload & preview -->
+    <section class="upload-area" id="dropZone">
+      <div class="upload-label">
+        <label for="imageInput" style="display: flex; flex-direction: column; align-items: center; gap: 0.3rem; width: 100%;">
+          <span>📁 Choose image or drag & drop</span>
+          <small>PNG, JPG, WEBP — up to 20MB</small>
+        </label>
+        <input type="file" id="imageInput" accept="image/png, image/jpeg, image/webp">
+      </div>
+      <div class="preview-box" id="previewBox">
+        <span style="color: #6b85a0; font-size: 0.9rem;">No image selected</span>
+      </div>
+      <div id="originalDimensions" class="dimension-badge" style="display: none;"> </div>
+    </section>
+
+    <!-- right: controls & result -->
+    <section class="controls">
+      <div class="control-group">
+        <label for="presetSelect">📐 Preset dimensions</label>
+        <select id="presetSelect" class="select-preset">
+          <option value="custom">Custom (free resize)</option>
+          <option value="etsy">Etsy listing (570×570)</option>
+          <option value="etsy-square">Etsy square (1000×1000)</option>
+          <option value="shopify">Shopify product (1024×1024)</option>
+          <option value="shopify_long">Shopify long (1024×1536)</option>
+          <option value="amazon">Amazon main (1000×1000)</option>
+          <option value="amazon_zoom">Amazon zoom (2000×2000)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>📏 Width × Height (px)</label>
+        <div class="dimension-inputs">
+          <input type="number" id="widthInput" value="800" min="10" max="8000" step="1">
+          <span>×</span>
+          <input type="number" id="heightInput" value="800" min="10" max="8000" step="1">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>🔄 Fit / crop mode</label>
+        <div class="radio-group">
+          <label><input type="radio" name="fitMode" value="cover" checked> Cover (crop)</label>
+          <label><input type="radio" name="fitMode" value="contain"> Contain (fit)</label>
+          <label><input type="radio" name="fitMode" value="stretch"> Stretch</label>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" id="processBtn">✨ Resize & fix</button>
+        <button class="btn btn-outline" id="resetBtn">↺ Reset</button>
+      </div>
+
+      <!-- result area -->
+      <div class="result-area" id="resultArea" style="display: none;">
+        <p style="font-weight: 500; margin-bottom: 0.3rem;">✅ Result preview</p>
+        <img id="resultImage" alt="Resized product image">
+        <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.6rem;">
+          <a id="downloadLink" class="btn btn-primary download-btn" download="resized_product_image.png">⬇ Download PNG</a>
+          <span id="resultDimensions" class="inline-message"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- affiliate / resource placeholder -->
+  <div class="affiliate-section">
+    <p>🛠️ Recommended tools for sellers</p>
+    <div class="affiliate-links">
+      <a href="#" target="_blank" rel="noopener">📷 Photo editor Pro</a>
+      <a href="#" target="_blank" rel="noopener">📸 Stock images</a>
+      <a href="#" target="_blank" rel="noopener">🧾 CSV to Shopify</a>
+      <a href="#" target="_blank" rel="noopener">📊 JSON converter</a>
+    </div>
+  </div>
+
+  <!-- ad placeholder -->
+  <div class="ad-placeholder">
+    <span>📢 Ad space — Promote your photo editing tool / stock photo site (affiliate)</span>
+  </div>
+
+  <!-- privacy note + metrics -->
+  <div class="privacy-note" id="privacyNote">
+    🔒 Privacy: events may be counted anonymously for product improvement. No credentials, no tracking, no upload.
+  </div>
+
+  <hr>
+  <div class="footer-meta">
+    <span style="font-size:0.8rem; color:#3f5a72;">✔️ Works offline · no backend</span>
+    <span style="font-size:0.8rem; color:#3f5a72;">#etsy #shopify #amazon #csv #json</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ---------- metrics reporter ----------
+    window.reportEvent = function(name, payload) {
+      if (typeof window.ORGANISM_METRICS_ENDPOINT === 'string' && window.ORGANISM_METRICS_ENDPOINT) {
+        try {
+          fetch(window.ORGANISM_METRICS_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event: name, payload: payload || {}, timestamp: Date.now() }),
+            keepalive: true
+          }).catch(() => {});
+        } catch (e) { /* silent */ }
+      }
+    };
+    // optional: report page view
+    window.reportEvent('tool_view', { tool: 'product_image_resizer' });
+
+    // ---------- DOM refs ----------
+    const imageInput = document.getElementById('imageInput');
+    const dropZone = document.getElementById('dropZone');
+    const previewBox = document.getElementById('previewBox');
+    const originalDimSpan = document.getElementById('originalDimensions');
+    const presetSelect = document.getElementById('presetSelect');
+    const widthInput = document.getElementById('widthInput');
+    const heightInput = document.getElementById('heightInput');
+    const processBtn = document.getElementById('processBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultArea = document.getElementById('resultArea');
+    const resultImage = document.getElementById('resultImage');
+    const downloadLink = document.getElementById('downloadLink');
+    const resultDimensions = document.getElementById('resultDimensions');
+
+    let currentFile = null;
+    let originalImage = null; // HTMLImageElement
+    let originalWidth = 0;
+    let originalHeight = 0;
+
+    // ---------- preset mapping ----------
+    const presets = {
+      'etsy': [570, 570],
+      'etsy-square': [1000, 1000],
+      'shopify': [1024, 1024],
+      'shopify_long': [1024, 1536],
+      'amazon': [1000, 1000],
+      'amazon_zoom': [2000, 2000],
+    };
+
+    // ---------- helpers ----------
+    function showPreview(src, w, h) {
+      previewBox.innerHTML = `<img src="${src}" alt="product preview">`;
+      originalDimSpan.style.display = 'inline-block';
+      originalDimSpan.textContent = `📸 original ${w} × ${h}`;
+    }
+
+    function clearPreview() {
+      previewBox.innerHTML = `<span style="color: #6b85a0; font-size: 0.9rem;">No image selected</span>`;
+      originalDimSpan.style.display = 'none';
+      resultArea.style.display = 'none';
+      currentFile = null;
+      originalImage = null;
+    }
+
+    // load file
+    function loadFile(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        clearPreview();
+        return;
+      }
+      currentFile = file;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          originalImage = img;
+          originalWidth = img.naturalWidth;
+          originalHeight = img.naturalHeight;
+          showPreview(e.target.result, originalWidth, originalHeight);
+          // auto-fill dimensions with original size if custom
+          if (presetSelect.value === 'custom') {
+            widthInput.value = originalWidth;
+            heightInput.value = originalHeight;
+          }
+          resultArea.style.display = 'none';
+          window.reportEvent('image_loaded', { w: originalWidth, h: originalHeight });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ---------- preset change ----------
+    presetSelect.addEventListener('change', function() {
+      const val = this.value;
+      if (val === 'custom') {
+        if (originalWidth && originalHeight) {
+          widthInput.value = originalWidth;
+          heightInput.value = originalHeight;
+        }
+        return;
+      }
+      const dims = presets[val];
+      if (dims) {
+        widthInput.value = dims[0];
+        heightInput.value = dims[1];
+      }
+    });
+
+    // ---------- drag & drop ----------
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const files = e.dataTransfer.files;
+      if (files.length) {
+        imageInput.files = files;
+        loadFile(files[0]);
+      }
+    });
+    imageInput.addEventListener('change', function() {
+      if (this.files.length) {
+        loadFile(this.files[0]);
+      } else {
+        clearPreview();
+      }
+    });
+
+    // ---------- reset ----------
+    resetBtn.addEventListener('click', function() {
+      imageInput.value = '';
+      clearPreview();
+      widthInput.value = 800;
+      heightInput.value = 800;
+      presetSelect.value = 'custom';
+      resultArea.style.display = 'none';
+      window.reportEvent('reset_tool', {});
+    });
+
+    // ---------- process (resize + crop) ----------
+    function processImage() {
+      if (!originalImage) {
+        alert('Please select an image first.');
+        return;
+      }
+
+      const targetW = parseInt(widthInput.value, 10);
+      const targetH = parseInt(heightInput.value, 10);
+      if (!targetW || !targetH || targetW < 1 || targetH < 1 || targetW > 8000 || targetH > 8000) {
+        alert('Enter valid dimensions (10–8000 px).');
+        return;
+      }
+
+      const fitMode = document.querySelector('input[name="fitMode"]:checked').value;
+
+      // create canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+
+      // draw based on mode
+      const imgW = originalImage.naturalWidth;
+      const imgH = originalImage.naturalHeight;
+      let sx, sy, sw, sh, dx, dy, dw, dh;
+
+      if (fitMode === 'stretch') {
+        // draw full image stretched
+        ctx.drawImage(originalImage, 0, 0, targetW, targetH);
+      } else if (fitMode === 'contain') {
+        // fit inside (letterbox)
+        const scale = Math.min(targetW / imgW, targetH / imgH);
+        const drawW = imgW * scale;
+        const drawH = imgH * scale;
+        const offsetX = (targetW - drawW) / 2;
+        const offsetY = (targetH - drawH) / 2;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, targetW, targetH);
+        ctx.drawImage(originalImage, offsetX, offsetY, drawW, drawH);
+      } else { // cover (crop)
+        const scale = Math.max(targetW / imgW, targetH / imgH);
+        const srcW = targetW / scale;
+        const srcH = targetH / scale;
+        sx = (imgW - srcW) / 2;
+        sy = (imgH - srcH) / 2;
+        sw = srcW;
+        sh = srcH;
+        dx = 0;
+        dy = 0;
+        dw = targetW;
+        dh = targetH;
+        ctx.drawImage(originalImage, sx, sy, sw, sh, dx, dy, dw, dh);
+      }
+
+      // output
+      const mimeType = 'image/png';
+      const dataUrl = canvas.toDataURL(mimeType);
+
+      // show result
+      resultImage.src = dataUrl;
+      resultArea.style.display = 'block';
+      downloadLink.href = dataUrl;
+      // set filename hint
+      const ext = 'png';
+      downloadLink.download = `resized_${targetW}x${targetH}.${ext}`;
+      resultDimensions.textContent = `⬇ ${targetW} × ${targetH} px`;
+
+      window.reportEvent('image_processed', { width: targetW, height: targetH, mode: fitMode });
+    }
+
+    processBtn.addEventListener('click', processImage);
+
+    // ---------- extra: allow enter key on dimension inputs? not needed ----------
+    // also preset update on dimension change? not needed.
+
+    // ---------- initial placeholder ----------
+    clearPreview();
+
+    // ---------- expose for debugging but not needed ----------
+  })();
+</script>
+
+<section data-organism-discovery="hub" style="margin:32px auto 20px;max-width:1040px;padding:16px;border-top:1px solid #d9e2ec;color:#475569;font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <strong style="display:block;color:#0f172a;margin-bottom:6px">More free browser tools</strong>
+  <p style="margin:0 0 8px">This page is part of an autonomous micro-tool network. Explore the live tool directory and related utilities.</p>
+  <p style="margin:0"><a href="https://kingms888.github.io/do-digital-organism-index/" style="color:#0f766e;font-weight:700">Open the tool directory</a> </p>
+</section>
+</body>
+</html>
