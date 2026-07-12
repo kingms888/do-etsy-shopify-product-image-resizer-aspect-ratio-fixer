@@ -1,0 +1,1 @@
+# do-etsy-shopify-product-image-resizer-aspect-ratio-fixer
